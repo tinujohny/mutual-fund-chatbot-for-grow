@@ -208,7 +208,8 @@ def crawl_and_write_chunks(target_urls: Iterable[str] | None = None) -> List[Tex
 
 def load_chunks() -> List[TextChunk]:
     if not CHUNKS_PATH.exists():
-        raise FileNotFoundError(f"{CHUNKS_PATH} does not exist. Run crawl_and_write_chunks() first.")
+        # On first run (e.g. Streamlit Cloud), build the knowledge base once.
+        crawl_and_write_chunks()
     chunks: List[TextChunk] = []
     with CHUNKS_PATH.open("r", encoding="utf-8") as f:
         for line in f:
