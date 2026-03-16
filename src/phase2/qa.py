@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
-from groq import Groq
+import httpx
 
 from ..phase1.policy import Intent, detect_policy
 from ..phase1.retriever import RetrievalIndex, load_index, search
@@ -46,37 +46,44 @@ def _build_context_snippet(chunks_with_scores) -> str:
 
 def _call_groq(system_prompt: str, user_prompt: str, context: str) -> str:
     """
-    Call Groq chat completion API with strict RAG-only instructions.
+    Call Groq chat completion API with strict RAG-only instructions,
+    using the HTTP API directly to avoid heavy Python client dependencies.
     """
     if not GROQ_API_KEY:
         # Fail fast with a clear message if key is not configured.
         raise RuntimeError("GROQ_API_KEY is not set in the environment.")
 
-    client = Groq(api_key=GROQ_API_KEY)
-
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json",
+    }
     messages = [
-        {
-            "role": "system",
-            "content": system_prompt,
-        },
-        {
-            "role": "user",
-            "content": user_prompt,
-        },
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
         {
             "role": "system",
             "content": f"Here is the ONLY context you may use, from Groww:\n\n{context}",
         },
     ]
+    payload = {
+        "model": GROQ_MODEL,
+        "messages": messages,
+        "temperature": 0.0,
+        "max_tokens": 256,
+    }
 
-    completion = client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=messages,
-        temperature=0.0,
-        max_tokens=256,
+    with httpx.Client(timeout=30.0) as client:
+        resp = client.post(url, headers=headers, json=payload)
+        resp.raise_for_status()
+        data = resp.json()
+
+    content = (
+        (data.get("choices") or [{}])[0]
+        .get("message", {})
+        .get("content", "")
     )
-    content = completion.choices[0].message.content or ""
-    return content.strip()
+    return (content or "").strip()
 
 
 def _truncate_to_three_sentences(text: str) -> str:
