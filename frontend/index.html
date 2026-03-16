@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mutual Fund FAQ Assistant | Groww</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+    }
+    .header p {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin: 0;
+    }
+    .embed-wrap {
+      width: 100%;
+      max-width: 560px;
+      flex: 1;
+      min-height: 80vh;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 15px 30px rgba(15,23,42,0.12);
+      background: #fff;
+    }
+    .embed-wrap iframe {
+      width: 100%;
+      height: 100%;
+      min-height: 700px;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Mutual Fund FAQ Assistant</h1>
+    <p>Facts-only. No investment advice. Powered by Groww.</p>
+  </div>
+  <div class="embed-wrap">
+    <!-- Replace this URL with your Streamlit app URL after deploying to Streamlit Cloud -->
+    <iframe
+      id="chat-embed"
+      src="https://YOUR-STREAMLIT-APP-URL.streamlit.app"
+      title="Mutual Fund FAQ Chat"
+      allow="clipboard-write"
+    ></iframe>
+  </div>
+  <script>
+    // After deploying to Streamlit Cloud, replace the URL below with your app URL, e.g.:
+    // 'https://mutual-fund-chatbot-for-groww.streamlit.app'
+    var STREAMLIT_APP_URL = 'https://YOUR-STREAMLIT-APP-URL.streamlit.app';
+    document.getElementById('chat-embed').src = STREAMLIT_APP_URL;
+  </script>
+</body>
+</html>
