@@ -69,13 +69,13 @@ This guide walks you through deploying the **backend (chat app)** on **Streamlit
      ```javascript
      var STREAMLIT_APP_URL = 'https://YOUR-STREAMLIT-APP-URL.streamlit.app';
      ```
-   - Replace `https://YOUR-STREAMLIT-APP-URL.streamlit.app` with your actual Streamlit URL (from Part 1, step 4), e.g.:
+   - Replace `https://YOUR-STREAMLIT-APP-URL.streamlit.app` with your actual Streamlit URL **and add `?embed=true`** (required for iframe embedding on Streamlit Cloud), e.g.:
      ```javascript
-     var STREAMLIT_APP_URL = 'https://mutual-fund-chatbot-for-groww.streamlit.app';
+     var STREAMLIT_APP_URL = 'https://mutual-fund-chatbot-for-groww.streamlit.app?embed=true';
      ```
-   - Also update the `src` in the iframe on the line above it to the same URL:
+   - Also update the `src` in the iframe to the same URL (with `?embed=true`):
      ```html
-     <iframe ... src="https://mutual-fund-chatbot-for-groww.streamlit.app" ...>
+     <iframe ... src="https://mutual-fund-chatbot-for-groww.streamlit.app?embed=true" ...>
      ```
    - Save, commit, and push to GitHub:
      ```bash

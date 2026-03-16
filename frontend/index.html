@@ -59,15 +59,14 @@
     <!-- Replace this URL with your Streamlit app URL after deploying to Streamlit Cloud -->
     <iframe
       id="chat-embed"
-      src="https://mutual-fund-chatbot-for-grow.streamlit.app"
+      src="https://mutual-fund-chatbot-for-grow.streamlit.app?embed=true"
       title="Mutual Fund FAQ Chat"
       allow="clipboard-write"
     ></iframe>
   </div>
   <script>
-    // After deploying to Streamlit Cloud, replace the URL below with your app URL, e.g.:
-    // 'https://mutual-fund-chatbot-for-groww.streamlit.app'
-    var STREAMLIT_APP_URL = 'https://mutual-fund-chatbot-for-grow.streamlit.app';
+    // Streamlit Cloud requires ?embed=true for iframe embedding to work.
+    var STREAMLIT_APP_URL = 'https://mutual-fund-chatbot-for-grow.streamlit.app?embed=true';
     document.getElementById('chat-embed').src = STREAMLIT_APP_URL;
   </script>
 </body>
