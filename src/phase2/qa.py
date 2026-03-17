@@ -51,7 +51,7 @@ def _call_groq(system_prompt: str, user_prompt: str, context: str) -> str:
     """
     if not GROQ_API_KEY:
         # Fail fast with a clear message if key is not configured.
-        raise RuntimeError("GROQ_API_KEY is not set in the environment.")
+        raise RuntimeError("GROQ_API_KEY is not set. Add it in Streamlit Secrets as GROQ_API_KEY.")
 
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
@@ -73,10 +73,21 @@ def _call_groq(system_prompt: str, user_prompt: str, context: str) -> str:
         "max_tokens": 256,
     }
 
-    with httpx.Client(timeout=30.0) as client:
-        resp = client.post(url, headers=headers, json=payload)
-        resp.raise_for_status()
-        data = resp.json()
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            resp = client.post(url, headers=headers, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPStatusError as e:
+        status = getattr(e.response, "status_code", None)
+        body = ""
+        try:
+            body = (e.response.text or "")[:500]
+        except Exception:
+            body = ""
+        raise RuntimeError(f"Groq API error (HTTP {status}). {body}".strip()) from e
+    except httpx.RequestError as e:
+        raise RuntimeError(f"Groq request failed: {e.__class__.__name__}") from e
 
     content = (
         (data.get("choices") or [{}])[0]
@@ -232,8 +243,15 @@ def answer_query_phase2(query: str, index: RetrievalIndex | None = None) -> Answ
         "If you cannot find the answer in the context, say so."
     )
 
-    raw_answer = _call_groq(system_prompt=system_prompt, user_prompt=user_prompt, context=context)
-    text = _truncate_to_three_sentences(raw_answer)
+    try:
+        raw_answer = _call_groq(system_prompt=system_prompt, user_prompt=user_prompt, context=context)
+        text = _truncate_to_three_sentences(raw_answer)
+    except Exception:
+        # Keep the app stable if Groq is unavailable/misconfigured.
+        text = (
+            "I’m having trouble generating an answer right now (LLM service unavailable). "
+            "Please try again in a moment or check the linked Groww source page."
+        )
 
     return Answer(
         text=text,
