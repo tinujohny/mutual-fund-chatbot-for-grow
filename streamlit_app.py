@@ -34,14 +34,14 @@ if st.session_state.get("chip_query"):
         })
     st.rerun()
 
-# Light frame around the whole chatbot (thin border, minimal)
+# One thick outer stroke; chip buttons borderless (columns only, not chat send)
 st.markdown(
     """
 <style>
   div[data-testid="stVerticalBlockBorderWrapper"] {
-    border: 1px solid rgba(148, 163, 184, 0.28) !important;
-    border-radius: 10px !important;
-    padding: 0.85rem 0.9rem !important;
+    border: 4px solid rgba(148, 163, 184, 0.45) !important;
+    border-radius: 12px !important;
+    padding: 0.9rem 1rem !important;
     max-width: 42rem !important;
     margin-left: auto !important;
     margin-right: auto !important;
@@ -49,6 +49,15 @@ st.markdown(
     margin-bottom: 1rem !important;
     box-sizing: border-box !important;
     box-shadow: none !important;
+    outline: none !important;
+  }
+  div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="column"] button {
+    border: none !important;
+    box-shadow: none !important;
+    background: rgba(255, 255, 255, 0.07) !important;
+  }
+  div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="column"] button:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
   }
 </style>
 """,
