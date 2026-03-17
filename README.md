@@ -12,6 +12,16 @@ python3 -m pip install -r requirements.txt
 python3 -m streamlit run streamlit_app.py
 ```
 
+## Check knowledge base (`chunks.jsonl`)
+
+After crawling (`python -m src.phase1.ingest`), verify seed URLs and coverage:
+
+```bash
+python3 scripts/audit_chunks.py
+```
+
+Re-run ingest if any **MISSING** seed URLs are reported (then redeploy / reboot Streamlit).
+
 ## Deploy: Backend (Streamlit) + Frontend (Vercel)
 
 **Backend** runs on **Streamlit Community Cloud** (chat app + RAG + Groq).  

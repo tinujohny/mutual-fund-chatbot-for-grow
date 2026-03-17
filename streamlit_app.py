@@ -14,11 +14,21 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-st.markdown("### Mutual Fund FAQ assistant")
+# Centered header (minimal HTML — avoids heavy CSS that breaks embed layout)
 st.markdown(
-    "Answers factual questions using only public information from Groww stored in embeddings, "
-    "with **one clear source link** in every answer.\n\n"
-    "**Facts-only. No investment advice. No PAN, Aadhaar, account numbers, OTPs, emails, or phone numbers.**"
+    """
+<div style="text-align: center; max-width: 42rem; margin: 0 auto 1rem auto;">
+  <h2 style="margin: 0 0 0.35rem 0; font-weight: 600;">Mutual Fund FAQ assistant</h2>
+  <p style="margin: 0; color: #6b7280; font-size: 0.95rem; line-height: 1.45;">
+    Answers factual questions using only public information from Groww stored in embeddings,
+    with <strong>one clear source link</strong> in every answer.
+  </p>
+  <p style="margin: 0.6rem 0 0 0; font-size: 0.88rem; line-height: 1.4;">
+    <strong>Facts-only.</strong> No investment advice. No PAN, Aadhaar, account numbers, OTPs, emails, or phone numbers.
+  </p>
+</div>
+""",
+    unsafe_allow_html=True,
 )
 
 if "history" not in st.session_state:
@@ -40,7 +50,10 @@ if st.session_state.get("chip_query"):
         })
     st.rerun()
 
-st.markdown("Try one of these:")
+st.markdown(
+    '<p style="text-align:center;margin:0.5rem 0 0.25rem 0;color:#6b7280;font-size:0.9rem;">Try one of these:</p>',
+    unsafe_allow_html=True,
+)
 ex1, ex2, ex3 = st.columns(3)
 with ex1:
     if st.button("ELSS lock-in?"):

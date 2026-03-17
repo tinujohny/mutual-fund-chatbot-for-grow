@@ -63,7 +63,7 @@ def _concept_page_boost(query_lower: str, url: str) -> int:
     if ("minimum" in query_lower or "min " in query_lower) and "sip" in query_lower:
         if _query_names_specific_scheme(query_lower):
             pass  # fund-specific min SIP: handled by scheme slug boost below
-        elif "minimum-investment" in u or "start-sip" in u or "sip-systematic" in u or "how-to-start-a-sip" in u:
+        elif "minimum-investment" in u or "start-sip" in u or "best-sip-with-500" in u:
             b += 70
     if ("capital" in query_lower and "gain" in query_lower) or "capital-gains" in query_lower:
         if "capital-gain" in u or "capital_gain" in u:

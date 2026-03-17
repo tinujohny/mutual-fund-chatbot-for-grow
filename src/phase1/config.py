@@ -35,17 +35,14 @@ CRAWL_TARGETS: List[CrawlTarget] = [
         label="benchmark-concept",
     ),
     # SIP / minimum investment (prefer non-blog sources where possible).
-    CrawlTarget(
-        url="https://groww.in/p/sip-systematic-investment-plan",
-        label="sip-concept",
-    ),
+    # SIP pages that reliably ingest (some /p/ and help URLs redirect or block crawlers).
     CrawlTarget(
         url="https://groww.in/mutual-funds/start-sip",
         label="start-sip",
     ),
     CrawlTarget(
-        url="https://groww.in/help/mutual-funds/mf-sip/how-to-start-a-sip-on-groww",
-        label="how-to-start-sip-help",
+        url="https://groww.in/mutual-funds/collections/best-sip-with-500",
+        label="sip-low-minimum-collection",
     ),
     CrawlTarget(
         url="https://groww.in/blog/mutual-funds-minimum-investment-100-very-low-minimum-amount",
