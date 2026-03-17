@@ -168,9 +168,6 @@ if st.button("What is expense ratio?"):
     st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Chat area: welcome + history
-st.markdown('<div class="mf-chat-wrap">', unsafe_allow_html=True)
-
 with st.chat_message("assistant", avatar="📈"):
     st.markdown("Hi, I'm your mutual fund FAQ assistant. Ask a factual question about mutual funds on Groww and I'll answer with a source link.")
 
