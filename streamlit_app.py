@@ -3,6 +3,9 @@ import streamlit as st
 from src.phase1.retriever import load_index
 from src.phase2.qa import answer_query_phase2
 
+# Bump when you deploy — if you don’t see this line on Streamlit Cloud, the new code isn’t live yet.
+APP_UI_VERSION = "2025-03-18 bordered-chat"
+
 @st.cache_resource
 def get_index():
     return load_index()
@@ -30,6 +33,7 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+st.caption(f"UI: {APP_UI_VERSION} — if this text is missing after refresh, push latest `streamlit_app.py` to GitHub and reboot the app.")
 
 if "history" not in st.session_state:
     st.session_state["history"] = []
@@ -51,37 +55,72 @@ if st.session_state.get("chip_query"):
     st.rerun()
 
 st.markdown(
-    '<p style="text-align:center;margin:0.5rem 0 0.25rem 0;color:#6b7280;font-size:0.9rem;">Try one of these:</p>',
+    """
+<p style="text-align:center;margin:1rem 0 0.6rem 0;color:#9ca3af;font-size:0.9rem;">Try one of these:</p>
+""",
     unsafe_allow_html=True,
 )
-ex1, ex2, ex3 = st.columns(3)
+# Centered row with space between chips
+_pad_l, ex1, ex2, ex3, _pad_r = st.columns([0.08, 1, 1, 1, 0.08])
 with ex1:
-    if st.button("ELSS lock-in?"):
+    if st.button("ELSS lock-in?", use_container_width=True, key="chip_elss"):
         st.session_state["chip_query"] = "What is the ELSS lock-in period for tax-saving mutual funds?"
         st.rerun()
 with ex2:
-    if st.button("Capital-gains statement?"):
+    if st.button("Capital-gains statement?", use_container_width=True, key="chip_cg"):
         st.session_state["chip_query"] = "How can I download my capital-gains statement on Groww?"
         st.rerun()
 with ex3:
-    if st.button("Expense ratio?"):
+    if st.button("Expense ratio?", use_container_width=True, key="chip_er"):
         st.session_state["chip_query"] = "What is an expense ratio in a mutual fund?"
         st.rerun()
 
-with st.chat_message("assistant", avatar="📈"):
-    st.markdown("Hi, I'm your mutual fund FAQ assistant. Ask a factual question about mutual funds on Groww and I'll answer with a source link.")
+st.markdown(
+    """
+<style>
+  /* Bordered chat panel + breathing room above chat input */
+  div[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 14px !important;
+    border-color: #4b5563 !important;
+    padding: 0.75rem 0.5rem 0.5rem 0.5rem !important;
+    margin-top: 0.25rem !important;
+    margin-bottom: 1rem !important;
+    max-width: 42rem;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  [data-testid="stChatInput"] {
+    margin-top: 0.5rem !important;
+    max-width: 42rem;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
-for turn in st.session_state["history"]:
-    with st.chat_message("user"):
-        st.markdown(turn["query"])
+# Clear gap between suggestion buttons and chat area
+st.markdown('<div style="height: 1.25rem;"></div>', unsafe_allow_html=True)
+
+with st.container(border=True):
     with st.chat_message("assistant", avatar="📈"):
-        st.markdown(turn["text"])
-        if turn.get("source_url"):
-            st.markdown(f"Source: [{turn['source_url']}]({turn['source_url']})")
-        if turn.get("last_updated"):
-            st.caption(f"Last updated from sources: {turn['last_updated']}")
+        st.markdown(
+            "Hi, I'm your mutual fund FAQ assistant. Ask a factual question about mutual funds on Groww "
+            "and I'll answer with a source link."
+        )
 
-# Chat input at bottom
+    for turn in st.session_state["history"]:
+        with st.chat_message("user"):
+            st.markdown(turn["query"])
+        with st.chat_message("assistant", avatar="📈"):
+            st.markdown(turn["text"])
+            if turn.get("source_url"):
+                st.markdown(f"Source: [{turn['source_url']}]({turn['source_url']})")
+            if turn.get("last_updated"):
+                st.caption(f"Last updated from sources: {turn['last_updated']}")
+
+# Chat input at bottom (outside bordered box so it stays usable)
 prompt = st.chat_input("Type a factual mutual fund question...")
 if prompt and prompt.strip():
     ans = answer_query_phase2(prompt, index=index)
