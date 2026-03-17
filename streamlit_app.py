@@ -3,10 +3,6 @@ import streamlit as st
 from src.phase1.retriever import load_index
 from src.phase2.qa import answer_query_phase2
 
-# Bump when you deploy — if you don’t see this line on Streamlit Cloud, the new code isn’t live yet.
-APP_UI_VERSION = "2025-03-18 full-panel-border"
-
-
 @st.cache_resource
 def get_index():
     return load_index()
@@ -38,24 +34,21 @@ if st.session_state.get("chip_query"):
         })
     st.rerun()
 
-# One visible frame around title → chips → chat → input
+# Light frame around the whole chatbot (thin border, minimal)
 st.markdown(
     """
 <style>
-  /* Single outer panel: full chatbot in one border */
   div[data-testid="stVerticalBlockBorderWrapper"] {
-    border: 2px solid #6b7280 !important;
-    border-radius: 16px !important;
-    padding: 1.25rem 1.1rem 1rem 1.1rem !important;
-    max-width: 44rem !important;
+    border: 1px solid rgba(148, 163, 184, 0.28) !important;
+    border-radius: 10px !important;
+    padding: 0.85rem 0.9rem !important;
+    max-width: 42rem !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    margin-top: 0.5rem !important;
-    margin-bottom: 1.5rem !important;
+    margin-top: 0.35rem !important;
+    margin-bottom: 1rem !important;
     box-sizing: border-box !important;
-  }
-  [data-testid="stChatInput"] {
-    padding-top: 0.35rem !important;
+    box-shadow: none !important;
   }
 </style>
 """,
@@ -79,8 +72,6 @@ with st.container(border=True):
 """,
         unsafe_allow_html=True,
     )
-    st.caption(f"UI: {APP_UI_VERSION}")
-
     st.markdown(
         '<p style="text-align:center;margin:0.85rem 0 0.5rem 0;color:#9ca3af;font-size:0.9rem;">Try one of these:</p>',
         unsafe_allow_html=True,
