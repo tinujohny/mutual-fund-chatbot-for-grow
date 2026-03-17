@@ -6,6 +6,7 @@ from typing import List, Optional
 
 import httpx
 
+from ..phase1.ingest import TextChunk
 from ..phase1.policy import Intent, detect_policy
 from ..phase1.retriever import RetrievalIndex, load_index, search
 from .config import GROQ_API_KEY, GROQ_MODEL, TOP_K
@@ -119,6 +120,44 @@ def _prefer_concept_page_chunks(index: RetrievalIndex, query_lower: str, results
         if needle in u or (marker == "/p/benchmark" and "/p/benchmark" in u):
             rest = [(c, s) for c, s in results if c.url != ch.url][: TOP_K - 1]
             return [(ch, 999.0)] + rest
+    return results
+
+
+# (tokens_substring) -> URL must contain this substring (Groww scheme slug)
+_FUND_SCHEME_PINS: list[tuple[tuple[str, ...], str]] = [
+    (("hdfc", "large", "cap"), "hdfc-large-cap-fund-direct-growth"),
+    (("groww", "elss"), "groww-elss-tax-saver-fund-direct-growth"),
+    (("groww", "large", "cap"), "groww-large-cap-fund-direct-growth"),
+    (("sbi", "pharma"), "sbi-pharma-fund-direct-growth"),
+    (("sbi", "gold"), "sbi-gold-fund-direct-growth"),
+    (("dsp", "gilt"), "dsp-gilt-fund-direct-plan-growth"),
+]
+
+
+def _prefer_fund_scheme_chunks(index: RetrievalIndex, query_lower: str, results: list) -> list:
+    """When the user names a fund, use that scheme’s Groww page for context + citation."""
+    for tokens, slug in _FUND_SCHEME_PINS:
+        if all(t in query_lower for t in tokens):
+            candidates = [c for c in index.chunks if slug in (c.url or "").lower()]
+            if not candidates:
+                break
+            keys = ["minimum", "sip", "lumpsum", "investment", "500", "100", "monthly", "₹", "rs."]
+            if "sip" in query_lower or "minimum" in query_lower:
+                def _relevance(ch: TextChunk) -> int:
+                    t = (ch.text or "").lower()
+                    return sum(1 for k in keys if k in t)
+
+                primary = max(candidates, key=_relevance)
+            else:
+                primary = candidates[0]
+            others = [c for c in candidates if c.id != primary.id][: TOP_K - 1]
+            out = [(primary, 999.0)] + [(c, 50.0) for c in others]
+            seen = {primary.id, *(c.id for c in others)}
+            for c, s in results:
+                if c.id not in seen and len(out) < TOP_K:
+                    out.append((c, s))
+                    seen.add(c.id)
+            return out[:TOP_K]
     return results
 
 
@@ -278,6 +317,7 @@ def answer_query_phase2(query: str, index: RetrievalIndex | None = None) -> Answ
         index = load_index()
 
     results = search(index, query, k=TOP_K)
+    results = _prefer_fund_scheme_chunks(index, q_lower, results)
     results = _prefer_concept_page_chunks(index, q_lower, results)
     if not results:
         msg = (

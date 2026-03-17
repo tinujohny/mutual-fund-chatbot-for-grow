@@ -61,7 +61,9 @@ def _concept_page_boost(query_lower: str, url: str) -> int:
     ):
         b += 60
     if ("minimum" in query_lower or "min " in query_lower) and "sip" in query_lower:
-        if "minimum-investment" in u or "start-sip" in u or "sip-systematic" in u or "how-to-start-a-sip" in u:
+        if _query_names_specific_scheme(query_lower):
+            pass  # fund-specific min SIP: handled by scheme slug boost below
+        elif "minimum-investment" in u or "start-sip" in u or "sip-systematic" in u or "how-to-start-a-sip" in u:
             b += 70
     if ("capital" in query_lower and "gain" in query_lower) or "capital-gains" in query_lower:
         if "capital-gain" in u or "capital_gain" in u:
@@ -70,6 +72,8 @@ def _concept_page_boost(query_lower: str, url: str) -> int:
 
 
 def _is_concept_style_query(query_lower: str) -> bool:
+    # Note: do not include bare "minimum sip" — combined with fund names (e.g. HDFC Large Cap)
+    # it must hit the scheme page, not the generic minimum-investment blog.
     return any(
         phrase in query_lower
         for phrase in (
@@ -78,11 +82,26 @@ def _is_concept_style_query(query_lower: str) -> bool:
             "riskometer",
             "benchmark",
             "elss lock",
-            "minimum sip",
             "capital gain",
             "capital-gains",
         )
     )
+
+
+def _query_names_specific_scheme(query_lower: str) -> bool:
+    """Heuristic: user asked about a named fund house + category or known slug tokens."""
+    pairs = [
+        ("hdfc", "large"),
+        ("hdfc", "cap"),
+        ("sbi", "pharma"),
+        ("sbi", "gold"),
+        ("groww", "elss"),
+        ("groww", "large"),
+        ("dsp", "gilt"),
+        ("icici", "prudential"),
+        ("axis", "bluechip"),
+    ]
+    return any(a in query_lower and b in query_lower for a, b in pairs)
 
 
 def _score_chunk(ch: TextChunk, query: str) -> int:
@@ -105,6 +124,15 @@ def _score_chunk(ch: TextChunk, query: str) -> int:
 
     # Concept questions must hit the right Groww article, not a fund category listing.
     score += _concept_page_boost(q_lower, url)
+
+    # Named scheme: strong match to Groww fund URL slug
+    if "hdfc" in q_lower and "large" in q_lower and "cap" in q_lower and "hdfc-large-cap-fund" in url:
+        score += 120
+    if "groww" in q_lower and "elss" in q_lower and "groww-elss" in url:
+        score += 120
+    if _query_names_specific_scheme(q_lower) and "/blog/" in url:
+        score -= 100
+
     if _is_concept_style_query(q_lower):
         if "/p/" in url:
             score += 15
