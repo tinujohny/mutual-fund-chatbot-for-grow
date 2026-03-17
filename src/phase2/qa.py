@@ -219,6 +219,60 @@ def answer_query_phase2(query: str, index: RetrievalIndex | None = None) -> Answ
             refused=False,
         )
 
+    # Core MF concepts: direct definitions + official Groww article (avoids LLM saying “no answer” on thin/noisy scrape).
+    if "expense" in q_lower and "ratio" in q_lower:
+        msg = (
+            "The expense ratio is the annual cost of running a mutual fund scheme, shown as a percentage of the fund’s assets. "
+            "It covers expenses such as fund management, administration, and other recurring costs charged to the scheme. "
+            "Groww’s expense ratio guide explains how to read it when comparing funds."
+        )
+        return Answer(
+            text=_truncate_to_three_sentences(msg),
+            source_url="https://groww.in/p/expense-ratio",
+            last_updated=None,
+            intent=Intent.MF_FACT,
+            refused=False,
+        )
+    if "exit" in q_lower and "load" in q_lower:
+        msg = (
+            "Exit load is a fee some mutual funds charge when you redeem or switch units before a set period, as per the scheme document. "
+            "It is not charged on all funds and varies by scheme. "
+            "Groww’s exit load article describes how it applies in general."
+        )
+        return Answer(
+            text=_truncate_to_three_sentences(msg),
+            source_url="https://groww.in/p/exit-load-in-mutual-funds",
+            last_updated=None,
+            intent=Intent.MF_FACT,
+            refused=False,
+        )
+    if "riskometer" in q_lower:
+        msg = (
+            "The riskometer is a label that indicates how risky a mutual fund scheme is (for example, low, moderate, or high), as per regulatory norms. "
+            "It helps you see the risk level at a glance when comparing schemes. "
+            "Groww’s riskometer page explains what each level means."
+        )
+        return Answer(
+            text=_truncate_to_three_sentences(msg),
+            source_url="https://groww.in/p/riskometer",
+            last_updated=None,
+            intent=Intent.MF_FACT,
+            refused=False,
+        )
+    if "benchmark" in q_lower and ("mutual" in q_lower or "fund" in q_lower):
+        msg = (
+            "A benchmark is an index or standard used to describe what a mutual fund is compared against (for example, Nifty or a bond index). "
+            "Funds disclose a benchmark so investors can understand the fund’s style and context. "
+            "Groww’s benchmark article explains how to interpret it."
+        )
+        return Answer(
+            text=_truncate_to_three_sentences(msg),
+            source_url="https://groww.in/p/benchmark",
+            last_updated=None,
+            intent=Intent.MF_FACT,
+            refused=False,
+        )
+
     # For factual intents, we must have context from the embeddings/index.
     if index is None:
         index = load_index()
