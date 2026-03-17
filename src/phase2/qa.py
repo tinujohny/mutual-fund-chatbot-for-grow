@@ -97,6 +97,31 @@ def _call_groq(system_prompt: str, user_prompt: str, context: str) -> str:
     return (content or "").strip()
 
 
+def _prefer_concept_page_chunks(index: RetrievalIndex, query_lower: str, results: list) -> list:
+    """
+    For standard Groww concept questions, force context + citation from the matching /p/ article
+    when those chunks exist in the index (avoids wrong category URLs winning retrieval).
+    """
+    marker: Optional[str] = None
+    if "expense" in query_lower and "ratio" in query_lower:
+        marker = "expense-ratio"
+    elif "exit" in query_lower and "load" in query_lower:
+        marker = "exit-load"
+    elif "riskometer" in query_lower:
+        marker = "riskometer"
+    elif "benchmark" in query_lower:
+        marker = "/p/benchmark"
+    if not marker:
+        return results
+    needle = marker if marker.startswith("/") else marker
+    for ch in index.chunks:
+        u = (ch.url or "").lower()
+        if needle in u or (marker == "/p/benchmark" and "/p/benchmark" in u):
+            rest = [(c, s) for c, s in results if c.url != ch.url][: TOP_K - 1]
+            return [(ch, 999.0)] + rest
+    return results
+
+
 def _truncate_to_three_sentences(text: str) -> str:
     buf = text.replace("?", ".").replace("!", ".")
     sentences = [s.strip() for s in buf.split(".") if s.strip()]
@@ -199,6 +224,7 @@ def answer_query_phase2(query: str, index: RetrievalIndex | None = None) -> Answ
         index = load_index()
 
     results = search(index, query, k=TOP_K)
+    results = _prefer_concept_page_chunks(index, q_lower, results)
     if not results:
         msg = (
             "I couldn’t find this information in the current public Groww sources. "
